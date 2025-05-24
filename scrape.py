@@ -1,26 +1,22 @@
-
-import selenium.webdriver as webdriver 
+from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.chrome.options import Options
 
 def scrape_website(website):
-	print("Launching chrome browser")
+    options = Options()
+    options.add_argument('--headless')
+    options.add_argument('--no-sandbox')
+    options.add_argument('--disable-dev-shm-usage')
 
-	#allows for us to control chrome thorugh application (chrome driver)
-	chrome_driver_path = "./chromedriver.exe"
-	# specify how the webdriver should operate
-	options = webdriver.ChromeOptions()
-	#specify service we are using (where ever chrom application lives)
-	driver = webdriver.Chrome(service=Service(chrome_driver_path),options=options)
+    service = Service("/usr/local/bin/chromedriver")
+    driver = webdriver.Chrome(service=service, options=options)
 
-	try:
-		driver.get(website)
-		print("page loaded...")
-		html = driver.page_source
-
-	
-		return html
-	finally:
-		driver.quit()
+    try:
+        driver.get(website)
+        html = driver.page_source
+        return html
+    finally:
+        driver.quit()
 
 
 #code that will help clean html content
