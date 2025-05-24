@@ -1,18 +1,20 @@
 from selenium import webdriver
-from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
 
 def scrape_website(website):
+    print("Launching chrome browser")
+
     options = Options()
     options.add_argument('--headless')
     options.add_argument('--no-sandbox')
     options.add_argument('--disable-dev-shm-usage')
 
-    service = Service("/usr/local/bin/chromedriver")
-    driver = webdriver.Chrome(service=service, options=options)
+    # Don't specify chromedriver path – let Selenium Manager handle it
+    driver = webdriver.Chrome(options=options)
 
     try:
         driver.get(website)
+        print("Page loaded...")
         html = driver.page_source
         return html
     finally:
