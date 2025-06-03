@@ -1,55 +1,47 @@
-from selenium import webdriver
-from selenium.webdriver.chrome.options import Options
-
-def scrape_website(website):
-    print("Launching chrome browser")
-
-    options = Options()
-    options.add_argument('--headless')
-    options.add_argument('--no-sandbox')
-    options.add_argument('--disable-dev-shm-usage')
-
-    # Don't specify chromedriver path – let Selenium Manager handle it
-    driver = webdriver.Chrome(options=options)
-
-    try:
-        driver.get(website)
-        print("Page loaded...")
-        html = driver.page_source
-        return html
-    finally:
-        driver.quit()
-
-
-#code that will help clean html content
+import requests
 from bs4 import BeautifulSoup
 
+def scrape_website(website):
+    print("Fetching website content without Selenium...")
+
+    headers = {
+        "User-Agent": (
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+            "AppleWebKit/537.36 (KHTML, like Gecko) "
+            "Chrome/120.0.0.0 Safari/537.36"
+        )
+    }
+
+    try:
+        response = requests.get(website, headers=headers, timeout=10)
+        response.raise_for_status()
+        return response.text
+    except requests.exceptions.RequestException as e:
+        print(f"Error fetching {website}: {e}")
+        return ""
+
 def extract_body_content(html_content):
-	soup = BeautifulSoup(html_content, "html.parser")
-	body_content = soup.body
-	if body_content:
-		return str(body_content)
-	return""
+    soup = BeautifulSoup(html_content, "html.parser")
+    body_content = soup.body
+    if body_content:
+        return str(body_content)
+    return ""
 
 def clean_body_content(body_content):
-	soup =BeautifulSoup(body_content, "html.parser")
-	
-	#getting rid of style and script tags (not needed)
-	for script_or_style in soup(["script","style"]):
-		script_or_style.extract()
-	
-	#get all text and separate with new line
-	cleaned_content = soup.get_text(separator="\n")
-	#remove any back slash n characters that are unessesary
-	cleaned_content = "\n".join(
-		line.strip() for line in cleaned_content.splitlines() if line.strip()
-	)
-	
-	return cleaned_content
+    soup = BeautifulSoup(body_content, "html.parser")
 
-#can only bring in so much contnent
-def split_dom_content(dom_content,max_length=6000):
-	return[
-	dom_content[i: i + max_length] for i in range(0,len(dom_content),max_length)
-	]
+    for script_or_style in soup(["script", "style"]):
+        script_or_style.extract()
 
+    cleaned_content = soup.get_text(separator="\n")
+    cleaned_content = "\n".join(
+        line.strip() for line in cleaned_content.splitlines() if line.strip()
+    )
+
+    return cleaned_content
+
+def split_dom_content(dom_content, max_length=6000):
+    return [
+        dom_content[i: i + max_length]
+        for i in range(0, len(dom_content), max_length)
+    ]
