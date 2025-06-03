@@ -1,11 +1,6 @@
-#llm component
-#donwloading ollama, this allows for us to run opensource LLMs locally on your own computer 
-#dont need any api tokens from open AI
-
-from langchain_ollama import OllamaLLM
+from langchain.chat_models import ChatOpenAI
 from langchain.prompts import ChatPromptTemplate
-
-#template from git hub
+import streamlit as st
 
 template = (
     "You are tasked with extracting specific information from the following text content: {dom_content}. "
@@ -16,10 +11,12 @@ template = (
     "4. **Direct Data Only:** Your output should contain only the data that is explicitly requested, with no other text."
 )
 
+model = ChatOpenAI(
+    model="gpt-3.5-turbo",
+    api_key=st.secrets["OPENAI_API_KEY"]
+)
 
-model = OllamaLLM(model="llama3.1")
-
-def parse_with_ollama(dom_chunks, parse_description):
+def parse_with_openai(dom_chunks, parse_description):
     prompt = ChatPromptTemplate.from_template(template)
     chain = prompt | model
 
@@ -30,9 +27,7 @@ def parse_with_ollama(dom_chunks, parse_description):
             "dom_content": chunk,
             "parse_description": parse_description
         })
-        # output so you know something is loading and happening
         print(f"Parsed batch {i} of {len(dom_chunks)}")
         parsed_result.append(response)
 
-    return parsed_result  
-
+    return parsed_result
